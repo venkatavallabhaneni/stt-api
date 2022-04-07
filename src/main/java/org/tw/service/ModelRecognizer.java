@@ -14,15 +14,14 @@ public class ModelRecognizer {
     public static Recognizer getRecognizer(Languages language) {
 
         Recognizer recognizer = null;
-
-                try (Model modelEnIn = new Model("models/vosk-model-small-en-in-0.4")) {
-                    recognizer = new Recognizer(modelEnIn, 16000);
-                } catch (Exception e) {
-                    logger.error("ERROR", e);
-                }
-
+        try (Model modelEnIn = new Model("models/vosk-model-small-en-in-0.4")) {
+            recognizer = new Recognizer(modelEnIn, 16000);
+        } catch (Exception e) {
+            logger.error("ERROR", e);
+        }
 
         return recognizer;
     }
+
 
 }

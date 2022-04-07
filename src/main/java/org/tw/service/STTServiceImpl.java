@@ -1,19 +1,20 @@
 package org.tw.service;
 
 import org.apache.commons.lang3.StringUtils;
-import org.tw.domain.Transcription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Service
 public class STTServiceImpl implements STTService {
+
+    private static Logger logger = LoggerFactory.getLogger(STTServiceImpl.class);
 
     @Autowired
     private DecodeSpeechToText decodeSpeechToText;
@@ -21,21 +22,19 @@ public class STTServiceImpl implements STTService {
     @Autowired
     private STTVoskClient voskClient;
 
-    public STTServiceImpl(DecodeSpeechToText decodeSpeechToText,STTVoskClient voskClient) {
+    public STTServiceImpl(DecodeSpeechToText decodeSpeechToText, STTVoskClient voskClient) {
         this.decodeSpeechToText = decodeSpeechToText;
-        this.voskClient=voskClient;
+        this.voskClient = voskClient;
     }
 
     private Random random = new Random();
 
     @Override
-    public String convertOffline(byte[] audio,String language) {
+    public String convertOffline(byte[] audio, String language) {
         try {
-            return decodeSpeechToText.convert(audio,language);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UnsupportedAudioFileException e) {
-            e.printStackTrace();
+            return decodeSpeechToText.convert(audio, language);
+        } catch (IOException | UnsupportedAudioFileException e) {
+            logger.error(e.getMessage(), e);
         }
         return StringUtils.EMPTY;
     }
@@ -48,12 +47,10 @@ public class STTServiceImpl implements STTService {
             return response.get(0);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return StringUtils.EMPTY;
     }
-
-
 
 
 }
