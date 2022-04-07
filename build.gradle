@@ -12,7 +12,7 @@ plugins {
 appengine {
 	deploy {
 		projectId = 'tw-kr-stt'
-		version = "1.0"
+		version = '1'
 		stopPreviousVersion = true
 		promote = true
 	}
