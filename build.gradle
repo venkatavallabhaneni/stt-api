@@ -1,0 +1,56 @@
+
+plugins {
+	id 'org.springframework.boot' version '2.6.6'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'com.google.cloud.tools.appengine' version '2.4.2'
+
+}
+
+
+
+appengine {
+	deploy {
+		projectId = 'tw-kr-stt'
+		version = "1.0"
+		stopPreviousVersion = true
+		promote = true
+	}
+}
+
+group = 'com.tw'
+version = '0.0.1-SNAPSHOT'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+
+}
+
+dependencies {
+
+	implementation 'com.google.appengine:appengine-api-1.0-sdk:+'
+	implementation 'jstl:jstl:1.2'
+	implementation group: 'com.alphacephei', name: 'vosk', version: '0.3.33'
+	implementation group: 'net.java.dev.jna', name: 'jna', version: '5.11.0'
+	implementation group: 'com.neovisionaries', name: 'nv-websocket-client', version: '2.14'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.5.10'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation group: 'io.cucumber', name: 'cucumber-spring', version: '6.11.0'
+	implementation group: 'io.cucumber', name: 'cucumber-java', version: '6.11.0'
+	testImplementation group: 'io.cucumber', name: 'cucumber-junit', version: '6.11.0'
+
+}
+
+test {
+	useJUnitPlatform()
+}
