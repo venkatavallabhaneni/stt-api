@@ -1,10 +1,13 @@
 package org.tw.service;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.tw.domain.SanitizedText;
+import org.tw.domain.Transcription;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
@@ -16,40 +19,62 @@ public class STTServiceImpl implements STTService {
 
     private static Logger logger = LoggerFactory.getLogger(STTServiceImpl.class);
 
-    @Autowired
-    private DecodeSpeechToText decodeSpeechToText;
+    private final DecodeSpeechToText decodeSpeechToText;
+
+    private final STTVoskClient voskClient;
+
+    private final ProfanityService profanityService;
 
     @Autowired
-    private STTVoskClient voskClient;
-
-    public STTServiceImpl(DecodeSpeechToText decodeSpeechToText, STTVoskClient voskClient) {
+    public STTServiceImpl(final DecodeSpeechToText decodeSpeechToText, final STTVoskClient voskClient,final ProfanityService profanityService) {
         this.decodeSpeechToText = decodeSpeechToText;
         this.voskClient = voskClient;
+        this.profanityService=profanityService;
     }
 
     private Random random = new Random();
 
     @Override
-    public String convertOffline(byte[] audio, String language) {
+    public Transcription convertOffline(byte[] audio, String language,boolean sanitize) {
+
+
         try {
-            return decodeSpeechToText.convert(audio, language);
+            String response = decodeSpeechToText.convert(audio, language);
+            return new Transcription(RandomUtils.nextLong(),cleanResponse(response,sanitize));
+
         } catch (IOException | UnsupportedAudioFileException e) {
             logger.error(e.getMessage(), e);
         }
-        return StringUtils.EMPTY;
+        return new Transcription(null,"");
     }
 
     @Override
-    public String convertOnline(byte[] audio, String language) {
+    public Transcription convertOnline(byte[] audio, String language,boolean sanitize) {
         try {
             List<String> response = voskClient.transcribe(audio);
 
-            return response.get(0);
+            return new Transcription(RandomUtils.nextLong(),cleanResponse(response.get(0),sanitize));
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return StringUtils.EMPTY;
+        return new Transcription(null,"");
+    }
+
+    private String cleanResponse(String responseFromVosk,boolean sanitize){
+
+        if(StringUtils.isBlank(responseFromVosk)){
+            return responseFromVosk;
+        }
+
+       // responseFromVosk= responseFromVosk.replaceAll("[^a-zA-Z0-9-./]", "");
+
+        if(sanitize) {
+            SanitizedText text  = profanityService.censor(responseFromVosk);
+            responseFromVosk=text.getText();
+        }
+        return responseFromVosk;
+
     }
 
 

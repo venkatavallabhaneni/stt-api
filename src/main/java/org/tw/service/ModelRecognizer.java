@@ -10,7 +10,6 @@ public class ModelRecognizer {
 
     private static Logger logger = LoggerFactory.getLogger(ModelRecognizer.class);
 
-
     public static Recognizer getRecognizer(Languages language) {
 
         Recognizer recognizer = null;
@@ -22,6 +21,5 @@ public class ModelRecognizer {
 
         return recognizer;
     }
-
 
 }

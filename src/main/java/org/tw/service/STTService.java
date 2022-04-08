@@ -1,9 +1,11 @@
 package org.tw.service;
 
+import org.tw.domain.Transcription;
+
 public interface STTService {
 
-    String convertOffline(byte[] audio, String language);
+    Transcription convertOffline(byte[] audio, String language, boolean sanitize);
 
-    String convertOnline(byte[] audio, String language);
+    Transcription convertOnline(byte[] audio, String language,boolean sanitize);
 
 }

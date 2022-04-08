@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.tw.domain.SanitizedText;
+import org.tw.domain.Transcription;
 import org.tw.service.ProfanityService;
 import org.tw.service.STTService;
 
@@ -36,14 +37,23 @@ public class STTController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Successful")})
     @PostMapping(value = "/v0/convert", headers = "Accept=multipart/form-data", produces = "application/json", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseBody
-    public String convertOffline(@RequestParam MultipartFile file, @RequestParam String language) {
+    public Transcription convertOffline(@RequestParam MultipartFile file, @RequestParam String language, @RequestParam boolean sanitize) {
+
+
 
         try {
-            return sttService.convertOffline(file.getBytes(), language);
+            long start = System.currentTimeMillis();
+            Transcription transcription = sttService.convertOffline(file.getBytes(), language,sanitize);
+            long end = System.currentTimeMillis();
+
+            logger.info("Total Time taken to convert and clean :: "+(end-start)/1000.0);
+
+            return transcription;
+
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
-        return StringUtils.EMPTY;
+        return new Transcription(null,"");
     }
 
     @Deprecated
@@ -51,14 +61,14 @@ public class STTController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Successful")})
     @PostMapping(value = "/v1/convert", headers = "Accept=multipart/form-data", produces = "application/json", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @ResponseBody
-    public String convertOnline(@RequestParam MultipartFile file, @RequestParam String language) {
+    public Transcription convertOnline(@RequestParam MultipartFile file, @RequestParam String language,boolean sanitize) {
 
         try {
-            return sttService.convertOnline(file.getBytes(), language);
+            return sttService.convertOnline(file.getBytes(), language,sanitize);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
-        return StringUtils.EMPTY;
+        return new Transcription(null,"");
     }
 
     @Operation(summary = "Filter for cuss words", description = "filter cuss words")

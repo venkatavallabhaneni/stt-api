@@ -11,11 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Transcription {
 
-    private String customerId;
-    private String productUpc;
     private Long id;
-    private byte[] audio;
-    private long chunkId;
     private String text;
 
 
