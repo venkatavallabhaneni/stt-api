@@ -1,8 +1,8 @@
-package org.tw.service;
+package org.tw.service.product;
 
 import org.tw.domain.Transcription;
 
-public interface STTService {
+public interface ProductReviewService {
 
     Transcription convertOffline(byte[] audio, String language, boolean sanitize);
 
