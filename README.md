@@ -8,5 +8,6 @@
 ### Steps to build and run
 3. Download the code
 4. ./gradlew bootRun
+5. Access url : http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config#/
 
   
