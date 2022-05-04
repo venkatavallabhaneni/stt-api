@@ -1,4 +1,4 @@
-package org.tw.service.product;
+package org.tw.service.stt;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -10,8 +10,6 @@ import org.tw.domain.SanitizedText;
 import org.tw.domain.Transcription;
 import org.tw.service.core.DecodeSpeechToText;
 import org.tw.service.core.ProfanityService;
-import org.tw.service.stt.STTService;
-import org.tw.service.stt.STTVoskClient;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
@@ -41,43 +39,53 @@ public class STTServiceImpl implements STTService {
     @Override
     public Transcription convertOffline(byte[] audio, String language,boolean sanitize) {
 
-
+        Transcription transcription = new Transcription();
         try {
             String response = decodeSpeechToText.convert(audio, language);
-            return new Transcription(RandomUtils.nextLong(),cleanResponse(response,sanitize),null);
+
+            SanitizedText text = cleanResponse(response,sanitize);
+            transcription.setText(text.getText());
+            transcription.setId(RandomUtils.nextLong());
+            transcription.setCussWords(text.getSwearWords());
+            return transcription;
 
         } catch (IOException | UnsupportedAudioFileException e) {
             logger.error(e.getMessage(), e);
         }
-        return new Transcription();
+        return transcription;
     }
 
     @Override
     public Transcription convertOnline(byte[] audio, String language,boolean sanitize) {
+
+        Transcription transcription = new Transcription();
         try {
             List<String> response = voskClient.transcribe(audio);
 
-            return new Transcription(RandomUtils.nextLong(),cleanResponse(response.get(0),sanitize),null);
+            SanitizedText text = cleanResponse(response.get(0),sanitize);
+            transcription.setText(text.getText());
+            transcription.setId(RandomUtils.nextLong());
+            transcription.setCussWords(text.getSwearWords());
+            return transcription;
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return new Transcription();
+        return transcription;
     }
 
-    private String cleanResponse(String responseFromVosk,boolean sanitize){
+    private SanitizedText cleanResponse(String responseFromVosk,boolean sanitize){
+
+        SanitizedText text = new SanitizedText();
 
         if(StringUtils.isBlank(responseFromVosk)){
-            return responseFromVosk;
+            return null;
         }
-
-       // responseFromVosk= responseFromVosk.replaceAll("[^a-zA-Z0-9-./]", "");
-
         if(sanitize) {
-            SanitizedText text  = profanityService.censor(responseFromVosk);
-            responseFromVosk=text.getText();
+             text  = profanityService.censor(responseFromVosk);
+
         }
-        return responseFromVosk;
+        return text;
 
     }
 

@@ -1,92 +1,86 @@
-package org.tw.service.stt;
+package org.tw.service.product;
 
-import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.tw.domain.SanitizedText;
+import org.tw.domain.CustomerProductReview;
+import org.tw.domain.ProductReview;
 import org.tw.domain.Transcription;
-import org.tw.service.core.DecodeSpeechToText;
-import org.tw.service.core.ProfanityService;
-import org.tw.service.product.ProductReviewService;
-import org.tw.service.stt.STTVoskClient;
 
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+import java.util.Optional;
 
-public interface STTService {
 
-    Transcription convertOffline(byte[] audio, String language, boolean sanitize);
+@Service
+public class ProductReviewServiceImpl implements ProductReviewService {
 
-    Transcription convertOnline(byte[] audio, String language,boolean sanitize);
+    private final ProductReviewDao reviewDao;
 
-    @Service
-    class ProductReviewServiceImpl implements ProductReviewService {
+    @Autowired
+    public ProductReviewServiceImpl(ProductReviewDao reviewDao) {
+        this.reviewDao = reviewDao;
+    }
 
-        private static Logger logger = LoggerFactory.getLogger(ProductReviewServiceImpl.class);
+    private static Logger logger = LoggerFactory.getLogger(ProductReviewServiceImpl.class);
 
-        private final DecodeSpeechToText decodeSpeechToText;
 
-        private final STTVoskClient voskClient;
+    @Override
+    public CustomerProductReview reviews(String customerId, String productId) {
 
-        private final ProfanityService profanityService;
+        CustomerProductReview customerProductReview = new CustomerProductReview();
 
-        @Autowired
-        public ProductReviewServiceImpl(final DecodeSpeechToText decodeSpeechToText, final STTVoskClient voskClient, final ProfanityService profanityService) {
-            this.decodeSpeechToText = decodeSpeechToText;
-            this.voskClient = voskClient;
-            this.profanityService=profanityService;
+        Optional<ProductReview> reviews = reviewDao.findByProductIdAndCustomerId(productId,customerId);
+
+        if(reviews.isPresent()) {
+            map(reviews.get(),customerProductReview);
         }
+        return customerProductReview;
+    }
 
-        private Random random = new Random();
+    @Override
+    public CustomerProductReview create(CustomerProductReview customerProductReview) {
 
-        @Override
-        public Transcription convertOffline(byte[] audio, String language,boolean sanitize) {
+        ProductReview productReviewEntity = new ProductReview();
+        map(customerProductReview,productReviewEntity);
 
-
-            try {
-                String response = decodeSpeechToText.convert(audio, language);
-                return new Transcription(RandomUtils.nextLong(),cleanResponse(response,sanitize),null);
-
-            } catch (IOException | UnsupportedAudioFileException e) {
-                logger.error(e.getMessage(), e);
-            }
-            return new Transcription();
+        productReviewEntity.setPublished(true);
+        if(!customerProductReview.isAllowedToPublish()){
+            productReviewEntity.setPublished(false);
         }
+        ProductReview productReview1 =  reviewDao.save(productReviewEntity);
 
-        @Override
-        public Transcription convertOnline(byte[] audio, String language,boolean sanitize) {
-            try {
-                List<String> response = voskClient.transcribe(audio);
+         map(productReview1,customerProductReview);
 
-                return new Transcription(RandomUtils.nextLong(),cleanResponse(response.get(0),sanitize),null);
-
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-            }
-            return new Transcription();
-        }
-
-        private String cleanResponse(String responseFromVosk,boolean sanitize){
-
-            if(StringUtils.isBlank(responseFromVosk)){
-                return responseFromVosk;
-            }
-
-           // responseFromVosk= responseFromVosk.replaceAll("[^a-zA-Z0-9-./]", "");
-
-            if(sanitize) {
-                SanitizedText text  = profanityService.censor(responseFromVosk);
-                responseFromVosk=text.getText();
-            }
-            return responseFromVosk;
-
-        }
-
+         return customerProductReview;
 
     }
+
+
+    private void map(CustomerProductReview customerProductReview, ProductReview productReviewEntity){
+
+        if(customerProductReview==null || productReviewEntity==null){
+            return;
+        }
+
+        BeanUtils.copyProperties(customerProductReview,productReviewEntity);
+        productReviewEntity.setTranscriptionId(customerProductReview.getReview().getId());
+        productReviewEntity.setTranscriptionText(customerProductReview.getReview().getText());
+    }
+
+    private void map(ProductReview productReviewEntity,CustomerProductReview customerProductReview){
+
+        if(customerProductReview==null || productReviewEntity==null){
+            return;
+        }
+        BeanUtils.copyProperties(productReviewEntity, customerProductReview);
+        Transcription transcription = new Transcription();
+        transcription.setText(productReviewEntity.getTranscriptionText());
+        transcription.setId(productReviewEntity.getTranscriptionId());
+        customerProductReview.setReview(transcription);
+
+    }
+
 }

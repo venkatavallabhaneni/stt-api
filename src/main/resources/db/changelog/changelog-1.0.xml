@@ -11,18 +11,18 @@
                 <constraints nullable="false" primaryKey="true"
                              unique="true" />
             </column>
-            <column name="productId" type="VARCHAR(50)">
+            <column name="product_id" type="VARCHAR(50)">
                 <constraints nullable="false" unique="false" />
             </column>
-            <column name="customerId" type="VARCHAR(50)">
-                <constraints nullable="false" unique="false" />
-            </column>
-
-            <column name="transcriptionId" type="VARCHAR(50)">
+            <column name="customer_id" type="VARCHAR(50)">
                 <constraints nullable="false" unique="false" />
             </column>
 
-            <column name="transcriptionText" type="BLOB">
+            <column name="transcription_id" type="VARCHAR(50)">
+                <constraints nullable="false" unique="false" />
+            </column>
+
+            <column name="transcription_text" type="BLOB">
                 <constraints nullable="false" unique="false" />
             </column>
             <column name="date" type="TIMESTAMP">
@@ -39,8 +39,10 @@
 
         </createTable>
 
+        <createSequence  incrementBy="1"   minValue="1"   sequenceName="seq_id_products" startValue="1"/>
+
         <rollback>
-            <dropTable tableName="PRODUCTS"/>
+            <dropTable tableName="Product_Reviews"/>
         </rollback>
 
     </changeSet>
