@@ -1,4 +1,4 @@
-package org.tw.service;
+package org.tw.service.product;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.tw.domain.SanitizedText;
 import org.tw.domain.Transcription;
+import org.tw.service.core.DecodeSpeechToText;
+import org.tw.service.core.ProfanityService;
+import org.tw.service.stt.STTService;
+import org.tw.service.stt.STTVoskClient;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
@@ -40,12 +44,12 @@ public class STTServiceImpl implements STTService {
 
         try {
             String response = decodeSpeechToText.convert(audio, language);
-            return new Transcription(RandomUtils.nextLong(),cleanResponse(response,sanitize));
+            return new Transcription(RandomUtils.nextLong(),cleanResponse(response,sanitize),null);
 
         } catch (IOException | UnsupportedAudioFileException e) {
             logger.error(e.getMessage(), e);
         }
-        return new Transcription(null,"");
+        return new Transcription();
     }
 
     @Override
@@ -53,12 +57,12 @@ public class STTServiceImpl implements STTService {
         try {
             List<String> response = voskClient.transcribe(audio);
 
-            return new Transcription(RandomUtils.nextLong(),cleanResponse(response.get(0),sanitize));
+            return new Transcription(RandomUtils.nextLong(),cleanResponse(response.get(0),sanitize),null);
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return new Transcription(null,"");
+        return new Transcription();
     }
 
     private String cleanResponse(String responseFromVosk,boolean sanitize){
