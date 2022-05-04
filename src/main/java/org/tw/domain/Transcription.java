@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -13,6 +16,7 @@ public class Transcription {
 
     private Long id;
     private String text;
+    private List<String> cussWords;
 
 
 }

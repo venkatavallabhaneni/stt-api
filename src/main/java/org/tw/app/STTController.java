@@ -3,7 +3,6 @@ package org.tw.app;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.tw.domain.SanitizedText;
 import org.tw.domain.Transcription;
-import org.tw.service.ProfanityService;
-import org.tw.service.STTService;
+import org.tw.service.core.ProfanityService;
+import org.tw.service.stt.STTService;
 
 import java.io.IOException;
 
@@ -39,21 +38,19 @@ public class STTController {
     @ResponseBody
     public Transcription convertOffline(@RequestParam MultipartFile file, @RequestParam String language, @RequestParam boolean sanitize) {
 
-
+        Transcription transcription =null;
 
         try {
             long start = System.currentTimeMillis();
-            Transcription transcription = sttService.convertOffline(file.getBytes(), language,sanitize);
+             transcription = sttService.convertOffline(file.getBytes(), language,sanitize);
             long end = System.currentTimeMillis();
-
             logger.info("Total Time taken to convert and clean :: "+(end-start)/1000.0);
-
-            return transcription;
 
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
+            transcription = new Transcription();
         }
-        return new Transcription(null,"");
+        return transcription;
     }
 
     @Deprecated
@@ -68,7 +65,7 @@ public class STTController {
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
-        return new Transcription(null,"");
+        return new Transcription();
     }
 
     @Operation(summary = "Filter for cuss words", description = "filter cuss words")

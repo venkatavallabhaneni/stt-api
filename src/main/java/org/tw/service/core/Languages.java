@@ -1,4 +1,4 @@
-package org.tw.service;
+package org.tw.service.core;
 
 public enum Languages {
 

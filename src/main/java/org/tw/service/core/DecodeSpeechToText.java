@@ -1,4 +1,4 @@
-package org.tw.service;
+package org.tw.service.core;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;

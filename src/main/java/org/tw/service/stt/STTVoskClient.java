@@ -1,4 +1,4 @@
-package org.tw.service;
+package org.tw.service.stt;
 
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
@@ -18,7 +18,7 @@ public class STTVoskClient {
 
     public ArrayList<String> transcribe(byte[] audio) throws Exception {
         WebSocketFactory factory = new WebSocketFactory();
-        WebSocket ws = factory.createSocket("ws://localhost:2700");
+        WebSocket ws = factory.createSocket("ws://2700-cs-605438052129-default.cs-asia-southeast1-yelo.cloudshell.dev/?authuser=0");
         ws.addListener(new WebSocketAdapter() {
             @Override
             public void onTextMessage(WebSocket websocket, String message) {
